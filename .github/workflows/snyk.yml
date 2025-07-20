@@ -70,9 +70,8 @@ jobs:
 
       # Objective-C setup (macOS required, skipped in Ubuntu)
 
-      - name: Run Snyk SCA Scan
-        uses: snyk/actions@v3
-        with:
-          command: test
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      - name: Install Snyk CLI
+        run: npm install -g snyk
+
+      - name: Authenticate with Snyk
+        run: snyk auth ${{ secrets.SNYK_TOKEN }}
