@@ -1,2 +1,2 @@
-flask==0.12  # Vulnerable version
-requests==2.19.0  # Vulnerable version
+flask==0.12.5  # Vulnerable version
+requests==2.32.4  # Vulnerable version
