@@ -8,13 +8,12 @@ on:
 
 jobs:
   snyk-security-scan:
-    name: Run Snyk SCA Scans
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js (for JS/TS)
+      - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
@@ -24,7 +23,7 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Set up Java (for Java/Kotlin)
+      - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
@@ -38,25 +37,57 @@ jobs:
       - name: Install Snyk CLI
         run: npm install -g snyk
 
-      - name: Authenticate with Snyk
+      - name: Authenticate Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
 
+      # Python deps
+      - name: Install Python dependencies
+        run: |
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+
+      # Node.js deps
+      - name: Install Node.js dependencies
+        run: |
+          if [ -f package.json ]; then
+            npm install --ignore-scripts
+          fi
+
+      # Java/Kotlin deps
+      - name: Install Java dependencies
+        run: |
+          if [ -f pom.xml ]; then
+            mvn install -DskipTests
+          elif [ -f build.gradle ]; then
+            ./gradlew build -x test
+          fi
+
+      # Go deps
+      - name: Tidy Go modules
+        run: |
+          if [ -f go.mod ]; then
+            go mod tidy
+          fi
+
+      # Run Snyk scans
       - name: Snyk Test - Python
         run: snyk test --file=requirements.txt || true
         continue-on-error: true
 
-      - name: Snyk Test - JavaScript/TypeScript
+      - name: Snyk Test - Node.js
         run: snyk test --file=package.json || true
         continue-on-error: true
 
       - name: Snyk Test - Java/Kotlin
-        run: snyk test --file=pom.xml || snyk test --file=build.gradle || true
+        run: |
+          snyk test --file=pom.xml || snyk test --file=build.gradle || true
         continue-on-error: true
 
       - name: Snyk Test - Go
         run: snyk test --file=go.mod || true
         continue-on-error: true
 
-      - name: Snyk Test - Swift, Objective-C, Shell (fallback scan)
+      - name: Snyk Fallback Test
         run: snyk test || true
         continue-on-error: true
