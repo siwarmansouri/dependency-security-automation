@@ -1,0 +1,24 @@
+{
+  "extends": ["config:base"],
+  "schedule": ["before 5am on monday"], 
+  "dependencyDashboard": true,
+  "packageRules": [
+    {
+      "description": "Group all minor and patch updates in one PR and Automerge",
+      "matchUpdateTypes": ["patch", "minor"],
+      "groupName": "All non-major dependency updates",
+      "groupSlug": "all-non-major",
+      "automerge": true,
+      "automergeType": "pr"
+    },
+    {
+      "description": "Never automerge major updates",
+      "matchUpdateTypes": ["major"],
+      "automerge": false
+    }
+  ],
+  "prHourlyLimit": 2, 
+  "prConcurrentLimit": 5,
+  "labels": ["dependencies", "renovate"],
+  "requireConfig": "optional"
+}
