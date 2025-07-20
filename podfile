@@ -1,0 +1,5 @@
+platform :ios, '13.0'
+
+target 'SnykSampleObjC' do
+  pod 'AFNetworking', '~> 4.0'
+end

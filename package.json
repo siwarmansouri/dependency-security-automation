@@ -1,0 +1,12 @@
+{
+  "name": "snyk-sample-js",
+  "version": "1.0.0",
+  "main": "sample.js",
+  "scripts": {
+    "test": "echo \"No test specified\""
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "lodash": "^4.17.21"
+  }
+}

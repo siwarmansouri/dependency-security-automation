@@ -1,0 +1,78 @@
+name: Snyk SCA Scan
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  snyk-sca:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        language: [python, node, java, go, swift, shell, objc]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Python setup
+      - name: Set up Python
+        if: matrix.language == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python dependencies
+        if: matrix.language == 'python'
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      # Node.js / TypeScript / JavaScript setup
+      - name: Set up Node.js
+        if: matrix.language == 'node'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Node.js dependencies
+        if: matrix.language == 'node'
+        run: |
+          if [ -f package-lock.json ]; then npm ci; elif [ -f yarn.lock ]; then yarn install; elif [ -f pnpm-lock.yaml ]; then pnpm install; fi
+
+      # Java / Kotlin setup
+      - name: Set up Java
+        if: matrix.language == 'java'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+      - name: Build Java/Kotlin project
+        if: matrix.language == 'java'
+        run: |
+          if [ -f mvnw ]; then ./mvnw compile; elif [ -f gradlew ]; then ./gradlew build; fi
+
+      # Go setup
+      - name: Set up Go
+        if: matrix.language == 'go'
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - name: Build Go project
+        if: matrix.language == 'go'
+        run: |
+          if [ -f go.mod ]; then go build ./...; fi
+
+      # Swift setup
+      - name: Set up Swift
+        if: matrix.language == 'swift'
+        run: sudo apt-get install -y swift
+
+      # Shell setup (no dependencies)
+
+      # Objective-C setup (macOS required, skipped in Ubuntu)
+
+      - name: Run Snyk SCA Scan
+        uses: snyk/actions@v3
+        with:
+          command: test
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
