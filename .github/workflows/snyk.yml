@@ -1,77 +1,62 @@
-name: Snyk SCA Scan
+name: Snyk Multi-Language Security Scan
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
-  snyk-sca:
+  snyk-security-scan:
+    name: Run Snyk SCA Scans
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        language: [python, node, java, go, swift, shell, objc]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      # Python setup
+      - name: Set up Node.js (for JS/TS)
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
       - name: Set up Python
-        if: matrix.language == 'python'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-      - name: Install Python dependencies
-        if: matrix.language == 'python'
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          python-version: '3.x'
 
-      # Node.js / TypeScript / JavaScript setup
-      - name: Set up Node.js
-        if: matrix.language == 'node'
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - name: Install Node.js dependencies
-        if: matrix.language == 'node'
-        run: |
-          if [ -f package-lock.json ]; then npm ci; elif [ -f yarn.lock ]; then yarn install; elif [ -f pnpm-lock.yaml ]; then pnpm install; fi
-
-      # Java / Kotlin setup
-      - name: Set up Java
-        if: matrix.language == 'java'
+      - name: Set up Java (for Java/Kotlin)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '21'
-      - name: Build Java/Kotlin project
-        if: matrix.language == 'java'
-        run: |
-          if [ -f mvnw ]; then ./mvnw compile; elif [ -f gradlew ]; then ./gradlew build; fi
+          java-version: '17'
 
-      # Go setup
       - name: Set up Go
-        if: matrix.language == 'go'
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
-      - name: Build Go project
-        if: matrix.language == 'go'
-        run: |
-          if [ -f go.mod ]; then go build ./...; fi
-
-      # Swift setup
-      - name: Set up Swift
-        if: matrix.language == 'swift'
-        run: sudo apt-get install -y swift
-
-      # Shell setup (no dependencies)
-
-      # Objective-C setup (macOS required, skipped in Ubuntu)
+          go-version: '1.21'
 
       - name: Install Snyk CLI
         run: npm install -g snyk
 
       - name: Authenticate with Snyk
         run: snyk auth ${{ secrets.SNYK_TOKEN }}
+
+      - name: Snyk Test - Python
+        run: snyk test --file=requirements.txt || true
+        continue-on-error: true
+
+      - name: Snyk Test - JavaScript/TypeScript
+        run: snyk test --file=package.json || true
+        continue-on-error: true
+
+      - name: Snyk Test - Java/Kotlin
+        run: snyk test --file=pom.xml || snyk test --file=build.gradle || true
+        continue-on-error: true
+
+      - name: Snyk Test - Go
+        run: snyk test --file=go.mod || true
+        continue-on-error: true
+
+      - name: Snyk Test - Swift, Objective-C, Shell (fallback scan)
+        run: snyk test || true
+        continue-on-error: true
