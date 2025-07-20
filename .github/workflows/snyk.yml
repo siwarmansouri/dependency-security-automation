@@ -72,22 +72,22 @@ jobs:
 
       # Run Snyk scans
       - name: Snyk Test - Python
-        run: snyk test --file=requirements.txt --severity-threshold=critical || true
+        run: snyk test --file=requirements.txt --severity-threshold=critical  
  
 
       - name: Snyk Test - Node.js
-        run: snyk test --file=package.json --severity-threshold=critical || true
+        run: snyk test --file=package.json --severity-threshold=critical 
      
 
       - name: Snyk Test - Java/Kotlin
         run: |
-          snyk test --file=pom.xml || snyk test --file=build.gradle --severity-threshold=critical || true
+          snyk test --file=pom.xml || snyk test --file=build.gradle --severity-threshold=critical  
     
 
       - name: Snyk Test - Go
-        run: snyk test --file=go.mod --severity-threshold=critical || true
+        run: snyk test --file=go.mod --severity-threshold=critical  
         
 
       - name: Snyk Fallback Test
-        run: snyk test --severity-threshold=critical || true
+        run: snyk test --severity-threshold=critical  
         
