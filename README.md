@@ -10,3 +10,5 @@ Automate dependency security check in the CI/CD pipeline, with early detection a
 <b>Renovate</b>: automated PR upgrades
 
 <b>Opus</b>: security reports and Jira Escalation 
+
+Demo
